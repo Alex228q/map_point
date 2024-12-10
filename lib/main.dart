@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:map_point/auth/presentation/reg_screen.dart';
+import 'package:map_point/auth/presentation/auth_screen.dart';
 
 void main() {
   runApp(const MainApp());
@@ -12,7 +12,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: RegistrationScreen(),
+      home: AuthScreen(),
     );
   }
 }
