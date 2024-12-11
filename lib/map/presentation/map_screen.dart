@@ -106,27 +106,83 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     });
   }
 
-  void _addMarker(LatLng position, String message) {
-    final markerData = MarkerData(position: position, message: message);
-    _markerData.add(markerData);
-    _markers.add(
-      Marker(
-        point: position,
-        width: 80,
-        height: 80,
-        child: GestureDetector(
-          onTap: () {
-            _animatedMapController.animateTo(dest: position, zoom: 16.7);
-            if (_isCurrentLocationInMarkers(_myLocation, _markerData)) {}
-          },
-          child: Icon(
-            Icons.location_on,
-            color: Colors.green,
-            size: 40,
+  // void _addMarker(LatLng position, String message) {
+  //   final markerData = MarkerData(position: position, message: message);
+  //   _markerData.add(markerData);
+  //   _markers.add(
+  //     Marker(
+  //       point: position,
+  //       width: 80,
+  //       height: 80,
+  //       child: GestureDetector(
+  //         child: Icon(
+  //           Icons.location_on,
+  //           color: Colors.green,
+  //           size: 40,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  void _addMarker(BuildContext context, LatLng position) async {
+    // Показываем AlertDialog для ввода названия чата
+    final TextEditingController _controller = TextEditingController();
+    String chatName = '';
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Введите название чата'),
+          content: TextField(
+            controller: _controller,
+            decoration: InputDecoration(hintText: 'Название чата'),
+            onChanged: (value) {
+              chatName = value;
+            },
           ),
-        ),
-      ),
-    );
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Отмена'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(chatName);
+              },
+              child: Text('Добавить'),
+            ),
+          ],
+        );
+      },
+    ).then((value) {
+      if (value != null && value.isNotEmpty) {
+        final markerData = MarkerData(position: position, message: value);
+        _markerData.add(markerData);
+        _markers.add(
+          Marker(
+            point: position,
+            width: 80,
+            height: 80,
+            child: GestureDetector(
+              child: Icon(
+                Icons.location_on,
+                color: Colors.green,
+                size: 40,
+              ),
+            ),
+          ),
+        );
+        Navigator.push(context, MaterialPageRoute(
+          builder: (context) {
+            return ChatScreen();
+          },
+        ));
+      }
+    });
   }
 
   @override
@@ -202,74 +258,35 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                           ),
                   ),
                 ),
-                if (!_isCurrentLocationInMarkers(_myLocation, _markerData))
-                  Positioned(
-                    bottom: 20,
-                    left: 8,
-                    right: 8,
-                    child: TextButton(
-                      onPressed: () {
-                        // _openNewChat(_myLocation!);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return ChatScreen();
-                            },
-                          ),
-                        );
-                      },
-                      child: Container(
-                        height: 50,
-                        child: Center(
-                          child: Text(
-                            'Начать чат в этом месте',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(
-                            50,
+                Positioned(
+                  bottom: 20,
+                  left: 8,
+                  right: 8,
+                  child: TextButton(
+                    onPressed: () {
+                      _addMarker(context, _myLocation!);
+                    },
+                    child: Container(
+                      height: 50,
+                      child: Center(
+                        child: Text(
+                          'Начать чат в этом месте',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                    ),
-                  )
-                else
-                  Positioned(
-                    bottom: 20,
-                    left: 8,
-                    right: 8,
-                    child: TextButton(
-                      onPressed: () {
-                        // _openNewChat(_myLocation!);
-                      },
-                      child: Container(
-                        height: 50,
-                        child: Center(
-                          child: Text(
-                            'Присоедиеиться к обсуждению',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(
-                            50,
-                          ),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(
+                          50,
                         ),
                       ),
                     ),
                   ),
+                )
               ],
             ),
     );
