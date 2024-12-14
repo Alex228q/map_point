@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:lottie/lottie.dart' as lottie;
-
-import '../../chat/presentation/chat_screen.dart';
-import '../model/marker_data.dart';
+import 'package:map_point/widgets/chat_icon.dart';
+import 'chat_screen.dart';
+import '../models/marker_data.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -28,20 +27,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   LatLng? _myLocation;
   List<MarkerData> _markerData = [];
   List<Marker> _markers = [];
-
-  bool _isCurrentLocationInMarkers(
-      LatLng? currentLocation, List<MarkerData> markerDataList) {
-    if (currentLocation == null) return false;
-
-    for (var marker in markerDataList) {
-      if (marker.position.latitude == currentLocation.latitude &&
-          marker.position.longitude == currentLocation.longitude) {
-        return true;
-      }
-    }
-
-    return false;
-  }
 
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
@@ -106,27 +91,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     });
   }
 
-  // void _addMarker(LatLng position, String message) {
-  //   final markerData = MarkerData(position: position, message: message);
-  //   _markerData.add(markerData);
-  //   _markers.add(
-  //     Marker(
-  //       point: position,
-  //       width: 80,
-  //       height: 80,
-  //       child: GestureDetector(
-  //         child: Icon(
-  //           Icons.location_on,
-  //           color: Colors.green,
-  //           size: 40,
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
   void _addMarker(BuildContext context, LatLng position) async {
-    // Показываем AlertDialog для ввода названия чата
     final TextEditingController _controller = TextEditingController();
     String chatName = '';
 
@@ -134,10 +99,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Введите название чата'),
+          title: Text('Тема чата'),
           content: TextField(
+            maxLength: 30,
             controller: _controller,
-            decoration: InputDecoration(hintText: 'Название чата'),
             onChanged: (value) {
               chatName = value;
             },
@@ -168,17 +133,27 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             width: 80,
             height: 80,
             child: GestureDetector(
-              child: Icon(
-                Icons.location_on,
-                color: Colors.green,
-                size: 40,
+              onDoubleTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return ChatScreen(chatTitle: value);
+                    },
+                  ),
+                );
+              },
+              child: ChatIcon(
+                title: value,
               ),
             ),
           ),
         );
         Navigator.push(context, MaterialPageRoute(
           builder: (context) {
-            return ChatScreen();
+            return ChatScreen(
+              chatTitle: value,
+            );
           },
         ));
       }

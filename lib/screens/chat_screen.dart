@@ -2,6 +2,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
+  final String chatTitle;
+  const ChatScreen({super.key, required this.chatTitle});
+
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
@@ -48,13 +51,13 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Чат'),
+        title: Text(widget.chatTitle),
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
-              reverse: true, // Новые сообщения появляются внизу
+              reverse: true,
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 return _buildMessage(_messages[_messages.length - 1 - index]);

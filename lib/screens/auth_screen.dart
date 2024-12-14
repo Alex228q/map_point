@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:map_point/map/presentation/map_screen.dart';
+import 'package:map_point/screens/map_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
