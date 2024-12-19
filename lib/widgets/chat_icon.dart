@@ -24,7 +24,7 @@ class ChatIcon extends StatelessWidget {
             ),
           ),
         ),
-        Positioned(
+        const Positioned(
           top: 28,
           child: Icon(
             Icons.chat_bubble_outline,

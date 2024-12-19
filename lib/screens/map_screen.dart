@@ -7,6 +7,7 @@ import 'package:lottie/lottie.dart' as lottie;
 import 'package:map_point/widgets/chat_icon.dart';
 import 'chat_screen.dart';
 import '../models/marker_data.dart';
+import 'dart:math' as math;
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -25,8 +26,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     cancelPreviousAnimations: true,
   );
   LatLng? _myLocation;
-  List<MarkerData> _markerData = [];
-  List<Marker> _markers = [];
+  final List<MarkerData> _markerData = [];
+  final List<Marker> _markers = [];
 
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
@@ -91,18 +92,150 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     });
   }
 
+  // void _addMarker(BuildContext context, LatLng position) async {
+  //   bool isPositionExists =
+  //       _markerData.any((marker) => marker.position == position);
+  //   if (isPositionExists) {
+  //     return;
+  //   }
+  //   final TextEditingController controller = TextEditingController();
+  //   String chatName = '';
+
+  //   await showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('Тема чата'),
+  //         content: TextField(
+  //           maxLength: 30,
+  //           controller: controller,
+  //           onChanged: (value) {
+  //             chatName = value;
+  //           },
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: const Text('Отмена'),
+  //           ),
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop(chatName);
+  //             },
+  //             child: const Text('Добавить'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   ).then((value) {
+  //     if (value != null && value.isNotEmpty) {
+  //       final markerData = MarkerData(position: position, message: value);
+  //       _markerData.add(markerData);
+  //       _markers.add(
+  //         Marker(
+  //           point: position,
+  //           width: 80,
+  //           height: 80,
+  //           child: GestureDetector(
+  //             onTap: () {
+  //               _animatedMapController.animateTo(dest: position, zoom: 16.7);
+  //             },
+  //             onDoubleTap: () {
+  //               Navigator.push(
+  //                 context,
+  //                 MaterialPageRoute(
+  //                   builder: (context) {
+  //                     return ChatScreen(chatTitle: value);
+  //                   },
+  //                 ),
+  //               );
+  //             },
+  //             child: ChatIcon(
+  //               title: value,
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //       if (context.mounted) {
+  //         Navigator.push(context, MaterialPageRoute(
+  //           builder: (context) {
+  //             return ChatScreen(
+  //               chatTitle: value,
+  //             );
+  //           },
+  //         ));
+  //       }
+  //     }
+  //   });
+  // }
+
+  double calculateDistance(LatLng pos1, LatLng pos2) {
+    const double earthRadius = 6371000;
+
+    double lat1 = pos1.latitude;
+    double lon1 = pos1.longitude;
+    double lat2 = pos2.latitude;
+    double lon2 = pos2.longitude;
+
+    double dLat = _toRadians(lat2 - lat1);
+    double dLon = _toRadians(lon2 - lon1);
+
+    double a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_toRadians(lat1)) *
+            math.cos(_toRadians(lat2)) *
+            math.sin(dLon / 2) *
+            math.sin(dLon / 2);
+
+    double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+
+    return earthRadius * c;
+  }
+
+  double _toRadians(double degrees) {
+    return degrees * (math.pi / 180);
+  }
+
   void _addMarker(BuildContext context, LatLng position) async {
-    final TextEditingController _controller = TextEditingController();
+    // Проверяем, существует ли уже маркер с такой позицией
+    // bool isPositionExists =
+    //     _markerData.any((marker) => marker.position == position);
+    // if (isPositionExists) {
+    //   ScaffoldMessenger.of(context).clearSnackBars();
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(content: Text('Чат в этом месте уже существует!')),
+    //   );
+    //   return;
+    // }
+
+    // Проверяем, есть ли маркеры слишком близко к текущей позиции
+    const double minDistance = 50; // Минимальное расстояние в метрах
+    bool isTooClose = _markerData.any((marker) {
+      double distance = calculateDistance(marker.position, position);
+      return distance < minDistance;
+    });
+
+    if (isTooClose) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Минимальное расстояние от другого чата 50 метров!')),
+      );
+      return;
+    }
+
+    final TextEditingController controller = TextEditingController();
     String chatName = '';
 
     await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Тема чата'),
+          title: const Text('Тема чата'),
           content: TextField(
             maxLength: 30,
-            controller: _controller,
+            controller: controller,
             onChanged: (value) {
               chatName = value;
             },
@@ -112,13 +245,13 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Отмена'),
+              child: const Text('Отмена'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(chatName);
               },
-              child: Text('Добавить'),
+              child: const Text('Добавить'),
             ),
           ],
         );
@@ -133,6 +266,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             width: 80,
             height: 80,
             child: GestureDetector(
+              onTap: () {
+                _animatedMapController.animateTo(dest: position, zoom: 16.7);
+              },
               onDoubleTap: () {
                 Navigator.push(
                   context,
@@ -149,13 +285,18 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             ),
           ),
         );
-        Navigator.push(context, MaterialPageRoute(
-          builder: (context) {
-            return ChatScreen(
-              chatTitle: value,
-            );
-          },
-        ));
+        if (context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return ChatScreen(
+                  chatTitle: value,
+                );
+              },
+            ),
+          );
+        }
       }
     });
   }
@@ -165,7 +306,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     return Scaffold(
       body: _myLocation == null
           ? Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
               ),
               child: Center(
@@ -177,8 +318,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 FlutterMap(
                   mapController: _animatedMapController.mapController,
                   options: MapOptions(
-                    interactionOptions:
-                        InteractionOptions(flags: ~InteractiveFlag.rotate),
+                    interactionOptions: const InteractionOptions(
+                        flags: ~InteractiveFlag.rotate),
                     initialZoom: 16.7,
                     initialCenter: _myLocation!,
                     onPositionChanged: (camera, hasGesture) {
@@ -200,7 +341,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                             width: 80,
                             height: 80,
                             point: _myLocation!,
-                            child: Icon(
+                            child: const Icon(
                               Icons.location_on,
                               color: Colors.red,
                               size: 40,
@@ -220,14 +361,14 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                     foregroundColor: Colors.indigo,
                     onPressed: _showCurrentLocation,
                     child: _isLoadingPosition
-                        ? Padding(
+                        ? const Padding(
                             padding: EdgeInsets.all(10),
                             child: CircularProgressIndicator(
                               color: Colors.red,
                               strokeWidth: 3,
                             ),
                           )
-                        : Icon(
+                        : const Icon(
                             Icons.location_searching_rounded,
                             color: Colors.red,
                           ),
@@ -243,7 +384,13 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                     },
                     child: Container(
                       height: 50,
-                      child: Center(
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(
+                          50,
+                        ),
+                      ),
+                      child: const Center(
                         child: Text(
                           'Начать чат в этом месте',
                           style: TextStyle(
@@ -251,12 +398,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
-                        ),
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(
-                          50,
                         ),
                       ),
                     ),

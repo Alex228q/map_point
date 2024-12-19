@@ -13,6 +13,7 @@ dependencies:
   flutter_map_animations: ^0.8.0
  
   geolocator: ^13.0.2
+  latlong2: ^0.9.1
   lottie: ^3.2.0
 
 dev_dependencies:
@@ -25,3 +26,4 @@ flutter:
   assets:
     - assets/loading.json
     - assets/google.png
+    - assets/vk.png
