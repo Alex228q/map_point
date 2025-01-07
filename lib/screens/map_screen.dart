@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -92,85 +93,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     });
   }
 
-  // void _addMarker(BuildContext context, LatLng position) async {
-  //   bool isPositionExists =
-  //       _markerData.any((marker) => marker.position == position);
-  //   if (isPositionExists) {
-  //     return;
-  //   }
-  //   final TextEditingController controller = TextEditingController();
-  //   String chatName = '';
-
-  //   await showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('Тема чата'),
-  //         content: TextField(
-  //           maxLength: 30,
-  //           controller: controller,
-  //           onChanged: (value) {
-  //             chatName = value;
-  //           },
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: const Text('Отмена'),
-  //           ),
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop(chatName);
-  //             },
-  //             child: const Text('Добавить'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   ).then((value) {
-  //     if (value != null && value.isNotEmpty) {
-  //       final markerData = MarkerData(position: position, message: value);
-  //       _markerData.add(markerData);
-  //       _markers.add(
-  //         Marker(
-  //           point: position,
-  //           width: 80,
-  //           height: 80,
-  //           child: GestureDetector(
-  //             onTap: () {
-  //               _animatedMapController.animateTo(dest: position, zoom: 16.7);
-  //             },
-  //             onDoubleTap: () {
-  //               Navigator.push(
-  //                 context,
-  //                 MaterialPageRoute(
-  //                   builder: (context) {
-  //                     return ChatScreen(chatTitle: value);
-  //                   },
-  //                 ),
-  //               );
-  //             },
-  //             child: ChatIcon(
-  //               title: value,
-  //             ),
-  //           ),
-  //         ),
-  //       );
-  //       if (context.mounted) {
-  //         Navigator.push(context, MaterialPageRoute(
-  //           builder: (context) {
-  //             return ChatScreen(
-  //               chatTitle: value,
-  //             );
-  //           },
-  //         ));
-  //       }
-  //     }
-  //   });
-  // }
-
   double calculateDistance(LatLng pos1, LatLng pos2) {
     const double earthRadius = 6371000;
 
@@ -198,19 +120,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 
   void _addMarker(BuildContext context, LatLng position) async {
-    // Проверяем, существует ли уже маркер с такой позицией
-    // bool isPositionExists =
-    //     _markerData.any((marker) => marker.position == position);
-    // if (isPositionExists) {
-    //   ScaffoldMessenger.of(context).clearSnackBars();
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(content: Text('Чат в этом месте уже существует!')),
-    //   );
-    //   return;
-    // }
-
-    // Проверяем, есть ли маркеры слишком близко к текущей позиции
-    const double minDistance = 50; // Минимальное расстояние в метрах
+    const double minDistance = 50;
     bool isTooClose = _markerData.any((marker) {
       double distance = calculateDistance(marker.position, position);
       return distance < minDistance;
@@ -220,7 +130,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Минимальное расстояние от другого чата 50 метров!')),
+          duration: Duration(seconds: 1),
+          content: Text('Минимальное расстояние от другого чата 50 метров!'),
+        ),
       );
       return;
     }
@@ -228,37 +140,59 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     final TextEditingController controller = TextEditingController();
     String chatName = '';
 
-    await showDialog(
+    await showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Тема чата'),
-          content: TextField(
-            maxLength: 30,
-            controller: controller,
-            onChanged: (value) {
-              chatName = value;
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Отмена'),
+        return LayoutBuilder(builder: (context, constraints) {
+          return Container(
+            height: constraints.maxHeight * 0.8,
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Text(
+                  'Тема чата',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 16.0),
+                TextField(
+                  textCapitalization: TextCapitalization.sentences,
+                  maxLength: 30,
+                  controller: controller,
+                  onChanged: (value) {
+                    chatName = value;
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Введите тему чата',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 16.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Закрыть модальное окно
+                      },
+                      child: Text('Отмена'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(chatName); // Вернуть chatName
+                      },
+                      child: Text('Добавить'),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(chatName);
-              },
-              child: const Text('Добавить'),
-            ),
-          ],
-        );
+          );
+        });
       },
     ).then((value) {
       if (value != null && value.isNotEmpty) {
-        final markerData = MarkerData(position: position, message: value);
+        final markerData = MarkerData(position: position, topik: value);
         _markerData.add(markerData);
         _markers.add(
           Marker(
@@ -272,7 +206,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               onDoubleTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
+                  CupertinoPageRoute(
                     builder: (context) {
                       return ChatScreen(chatTitle: value);
                     },

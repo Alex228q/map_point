@@ -2,7 +2,7 @@ import 'package:latlong2/latlong.dart';
 
 class MarkerData {
   final LatLng position;
-  final String message;
+  final String topik;
 
-  MarkerData({required this.position, required this.message});
+  MarkerData({required this.position, required this.topik});
 }
