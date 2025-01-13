@@ -129,7 +129,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     if (isTooClose) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           duration: Duration(seconds: 1),
           content: Text('Минимальное расстояние от другого чата 50 метров!'),
         ),
@@ -147,14 +147,14 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         return LayoutBuilder(builder: (context, constraints) {
           return Container(
             height: constraints.maxHeight * 0.8,
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                Text(
+                const Text(
                   'Тема чата',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 TextField(
                   textCapitalization: TextCapitalization.sentences,
                   maxLength: 30,
@@ -162,12 +162,12 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                   onChanged: (value) {
                     chatName = value;
                   },
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Введите тему чата',
                     border: OutlineInputBorder(),
                   ),
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -175,13 +175,13 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       onPressed: () {
                         Navigator.of(context).pop(); // Закрыть модальное окно
                       },
-                      child: Text('Отмена'),
+                      child: const Text('Отмена'),
                     ),
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop(chatName); // Вернуть chatName
                       },
-                      child: Text('Добавить'),
+                      child: const Text('Добавить'),
                     ),
                   ],
                 ),
