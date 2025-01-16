@@ -64,8 +64,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       setState(() {
         _myLocation = currentLatLng;
       });
-    } catch (e) {
-      print(e);
+    } catch (_) {
     } finally {
       setState(() {
         _isLoadingPosition = false;
@@ -80,9 +79,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       setState(() {
         _myLocation = currentLatLng;
       });
-    } catch (e) {
-      print(e);
-    }
+    } catch (_) {}
   }
 
   @override
@@ -220,16 +217,22 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           ),
         );
         if (context.mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) {
-                return ChatScreen(
-                  chatTitle: value,
-                );
-              },
-            ),
-          );
+          FocusScope.of(context).unfocus();
+
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (context.mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return ChatScreen(
+                      chatTitle: value,
+                    );
+                  },
+                ),
+              );
+            }
+          });
         }
       }
     });
